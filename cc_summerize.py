@@ -1,7 +1,7 @@
 import glob
 import os
 import re
-
+SEPARATOR = ","
 
 def read_results_file(file_path):
     with open(file_path, "r", encoding="utf-8") as file:
@@ -50,23 +50,41 @@ def read_results_file(file_path):
                 }
     return assay_results,metadata
 
-def print_results(all_results):
-    categories = ["ALB","TP","GLOB","A/G","TB","AST","ALT","AMY","CK","Crea","BUN","BUN/CREA","GLU","TG","Ca","PHOS"]
-    print(f"ANIMAL_NAME,Medical_ID,SAMPLE_ID,ALB,TP,GLOB,A/G,TB,AST,ALT,AMY,CK,Crea,BUN,BUN/CREA,GLU,TG,Ca,PHOS")
-
+def check_categories(all_results):
+    """
+    Check that all files in directory has been run on the same assay
+    """
+    _categories = []
     for file in all_results:
-        print(all_results[file]["Metadata"]["ANIMAL NAME"].replace(",",""),end=",")
-        print(all_results[file]["Metadata"]["Medical ID"].replace(",",""),end=",")
-        print(all_results[file]["Metadata"]["SAMPLE ID"].replace(",",""),end=",")
+        categories = list(all_results[file]["Assay Results"].keys())
+        categories.pop(0)
+        if len(_categories) == 0:
+            _categories = categories
+        else:
+            if _categories != categories:
+                exit("Seems to samples with different panels in the mix of files")
+    return _categories
+
+def print_results(all_results):
+    """
+    Print results. Get categories dynamically from headers
+    """
+    print(f"ANIMAL_NAME,Medical_ID,SAMPLE_ID",end=SEPARATOR)
+    categories = check_categories(all_results)
+    print(SEPARATOR.join(categories))
+    for file in all_results:
+        print(all_results[file]["Metadata"]["ANIMAL NAME"].replace(",",""),end=SEPARATOR)
+        print(all_results[file]["Metadata"]["Medical ID"].replace(",",""),end=SEPARATOR)
+        print(all_results[file]["Metadata"]["SAMPLE ID"].replace(",",""),end=SEPARATOR)
         for cat in categories:
             if cat == "PHOS":
                 print(all_results[file]["Assay Results"][cat]["Result"].replace(",",""))
             else:
-                print(all_results[file]["Assay Results"][cat]["Result"].replace(",",""),end=",")
+                print(all_results[file]["Assay Results"][cat]["Result"].replace(",",""),end=SEPARATOR)
         
 
 # Define the file pattern (modify as needed)
-file_pattern = "UserReport*.csv"  # Update with your actual directory
+file_pattern = "UserReport*.csv"
 all_results = {}
 # Get list of all matching files
 file_list = glob.glob(file_pattern)

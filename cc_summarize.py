@@ -48,6 +48,9 @@ def read_results_file(file_path):
                     "Reference Range": ref_range if ref_range else None,
                     "Unit": unit if unit else None
                 }
+            elif "Abnormal sample" in line:
+                key, value = map(str.strip, line.split(":", 1))
+                metadata[key] = value
     return assay_results,metadata
 
 def check_categories(all_results):
@@ -70,16 +73,18 @@ def print_results(all_results):
     Print results. Get categories dynamically from headers
     """
     print(f"ANIMAL_NAME,Medical_ID,SAMPLE_ID",end=SEPARATOR)
+    print("Abnormal_sample",end=SEPARATOR)
     categories = check_categories(all_results)
     print(SEPARATOR.join(categories))
     for file in all_results:
         print(all_results[file]["Metadata"]["ANIMAL NAME"].replace(",",""),end=SEPARATOR)
         print(all_results[file]["Metadata"]["Medical ID"].replace(",",""),end=SEPARATOR)
         print(all_results[file]["Metadata"]["SAMPLE ID"].replace(",",""),end=SEPARATOR)
-        results = []
+        abnormal = all_results[file]["Metadata"].get("Abnormal sample","No")
+        results = [abnormal]
         for cat in categories:
             results.append(all_results[file]["Assay Results"][cat]["Result"].replace(",",""))
-        print(SEPARATOR.join(results))  
+        print(SEPARATOR.join(results))
         
 
 # Define the file pattern (modify as needed)
@@ -99,5 +104,5 @@ for file in file_list:
 print_results(all_results)    
 
 # Print formatted dictionary
-import pprint
+#import pprint
 #pprint.pprint(all_results)

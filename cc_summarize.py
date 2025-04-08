@@ -76,11 +76,10 @@ def print_results(all_results):
         print(all_results[file]["Metadata"]["ANIMAL NAME"].replace(",",""),end=SEPARATOR)
         print(all_results[file]["Metadata"]["Medical ID"].replace(",",""),end=SEPARATOR)
         print(all_results[file]["Metadata"]["SAMPLE ID"].replace(",",""),end=SEPARATOR)
+        results = []
         for cat in categories:
-            if cat == "PHOS":
-                print(all_results[file]["Assay Results"][cat]["Result"].replace(",",""))
-            else:
-                print(all_results[file]["Assay Results"][cat]["Result"].replace(",",""),end=SEPARATOR)
+            results.append(all_results[file]["Assay Results"][cat]["Result"].replace(",",""))
+        print(SEPARATOR.join(results))  
         
 
 # Define the file pattern (modify as needed)

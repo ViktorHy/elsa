@@ -55,24 +55,35 @@ def read_results_file(file_path):
 
 def check_categories(all_results):
     """
-    Check that all files in directory has been run on the same assay
+    Check that all files in directory have been run on the same assay.
+    Only exit after checking all files.
     """
     _categories = []
+    mismatched_files = []
+
     for file in all_results:
         categories = list(all_results[file]["Assay Results"].keys())
         categories.pop(0)
-        if len(_categories) == 0:
+
+        if not _categories:
             _categories = categories
         else:
             if _categories != categories:
-                exit("Seems to samples with different panels in the mix of files")
+                mismatched_files.append(file)
+
+    if mismatched_files:
+        exit(
+            f"Samples in folder seem to have been run on different sets of analysis panels.\n"
+            f"Mismatched files: {', '.join(mismatched_files)}"
+        )
+
     return _categories
 
 def print_results(all_results):
     """
     Print results. Get categories dynamically from headers
     """
-    print(f"ANIMAL_NAME,Medical_ID,SAMPLE_ID",end=SEPARATOR)
+    print(f"ANIMAL_NAME,Medical_ID,SAMPLE_ID,OWNER_NAME",end=SEPARATOR)
     print("Abnormal_sample",end=SEPARATOR)
     categories = check_categories(all_results)
     print(SEPARATOR.join(categories))
@@ -80,6 +91,7 @@ def print_results(all_results):
         print(all_results[file]["Metadata"]["ANIMAL NAME"].replace(",",""),end=SEPARATOR)
         print(all_results[file]["Metadata"]["Medical ID"].replace(",",""),end=SEPARATOR)
         print(all_results[file]["Metadata"]["SAMPLE ID"].replace(",",""),end=SEPARATOR)
+        print(all_results[file]["Metadata"].get("OWNER NAME","").replace(",",""),end=SEPARATOR)
         abnormal = all_results[file]["Metadata"].get("Abnormal sample","No")
         results = [abnormal]
         for cat in categories:
@@ -102,7 +114,3 @@ for file in file_list:
     }
 
 print_results(all_results)    
-
-# Print formatted dictionary
-#import pprint
-#pprint.pprint(all_results)

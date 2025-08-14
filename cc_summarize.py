@@ -14,19 +14,22 @@ def read_results_file(file_path):
         # Control flags
         metadata_section = True
         assay_section = False
-
+        section_count = 0
         for line in lines:
             line = line.strip()
 
-            # Stop processing if "Report Interpretation" is found
-            if "Report Interpretation" in line:
-                break  
-
             # Detect section change
             if re.match(r"^-+$", line):  # Matches lines of dashes
+                section_count = section_count + 1
+            
+            # Meta data ends and assay data starts
+            if section_count == 1:
                 metadata_section = False
                 assay_section = True
-                continue
+            
+            # assays data ends, finish gathering information
+            if section_count == 2:
+                break
 
             # Parse metadata section
             if metadata_section and ":" in line:

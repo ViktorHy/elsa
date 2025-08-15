@@ -29,7 +29,7 @@ def read_results_file(file_path):
             
             # assays data ends, finish gathering information
             if section_count == 2:
-                break
+                assay_section = False
 
             # Parse metadata section
             if metadata_section and ":" in line:
